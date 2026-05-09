@@ -136,16 +136,17 @@ fun DashboardScreen(
                     contentPadding = PaddingValues(vertical = 6.dp)
                 ) {
                     items(cartItems, key = { it.productId }) { item ->
-                        CartItemRow(
-                            item = item,
-                            accentColor = cardAccents[catalogItems.indexOfFirst { it.id == item.productId }.coerceAtLeast(0) % cardAccents.size],
-                            onIncrease = {
-                                val product = catalogItems.find { it.id == item.productId }
-                                if (product != null) viewModel.addToCart(product, 1.0)
-                            },
-                            onDecrease = { viewModel.removeProductFromCart(item.productId) },
-                            onSetQuantity = { qty -> viewModel.setProductQuantity(item.productId, qty) }
-                        )
+                            CartItemRow(
+                                item = item,
+                                viewModel = viewModel,
+                                accentColor = cardAccents[catalogItems.indexOfFirst { it.id == item.productId }.coerceAtLeast(0) % cardAccents.size],
+                                onIncrease = {
+                                    val product = catalogItems.find { it.id == item.productId }
+                                    if (product != null) viewModel.addToCart(product, 1.0)
+                                },
+                                onDecrease = { viewModel.removeProductFromCart(item.productId) },
+                                onSetQuantity = { qty -> viewModel.setProductQuantity(item.productId, qty) }
+                            )
                     }
                 }
             } else {
@@ -273,7 +274,7 @@ fun DashboardScreen(
                         ) {
                             items(filteredItems, key = { it.id }) { product ->
                                 val accent = cardAccents[filteredItems.indexOf(product) % cardAccents.size]
-                                ProductCard(product, accent) {
+                                ProductCard(product, accent, viewModel) {
                                     viewModel.addToCart(product, 1.0)
                                     searchQuery = ""
                                 }
@@ -288,7 +289,7 @@ fun DashboardScreen(
 
 // ── Soft Product Card ──
 @Composable
-fun ProductCard(product: ProductItem, accent: Color, onClick: () -> Unit) {
+fun ProductCard(product: ProductItem, accent: Color, viewModel: BillingViewModel, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -350,6 +351,7 @@ fun ProductCard(product: ProductItem, accent: Color, onClick: () -> Unit) {
 fun CartItemRow(
     item: TransactionItem, 
     accentColor: Color, 
+    viewModel: BillingViewModel,
     onIncrease: () -> Unit, 
     onDecrease: () -> Unit,
     onSetQuantity: (Double) -> Unit
@@ -374,7 +376,7 @@ fun CartItemRow(
                 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(item.productName, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF1F2937))
-                    Text("₹${item.pricePerUnit} / unit", fontSize = 12.sp, color = Color(0xFF9CA3AF))
+                    Text("₹${item.pricePerUnit} / ${viewModel.getString("unit")}", fontSize = 12.sp, color = Color(0xFF9CA3AF))
                 }
 
                 // Qty controls
