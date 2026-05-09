@@ -48,6 +48,7 @@ class BillingRepositoryImpl(
                                 productName = obj.getString("productName"),
                                 quantity = obj.getDouble("quantity"),
                                 pricePerUnit = obj.getDouble("pricePerUnit"),
+                                unit = obj.optString("unit", "pcs"), // Fallback to pcs for old data
                                 totalPrice = obj.getDouble("totalPrice")
                             )
                         )
@@ -74,6 +75,7 @@ class BillingRepositoryImpl(
                 put("productName", item.productName)
                 put("quantity", item.quantity)
                 put("pricePerUnit", item.pricePerUnit)
+                put("unit", item.unit)
                 put("totalPrice", item.totalPrice)
             }
             jsonArray.put(obj)

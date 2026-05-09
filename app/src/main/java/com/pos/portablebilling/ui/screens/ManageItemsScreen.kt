@@ -1,5 +1,6 @@
 package com.pos.portablebilling.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -99,13 +101,42 @@ fun ManageItemsScreen(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         )
-                        OutlinedTextField(
-                            value = editUnit,
-                            onValueChange = { editUnit = it },
-                            label = { Text(viewModel.getString("unit", langCode)) },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
+                        var showEditUnitDropdown by remember { mutableStateOf(false) }
+                        Box(modifier = Modifier.weight(1f)) {
+                            OutlinedTextField(
+                                value = if (editUnit == "1") "100%" else if (editUnit.toDoubleOrNull() != null) "${(editUnit.toDouble() * 100).toInt()}%" else editUnit,
+                                onValueChange = { },
+                                label = { Text(viewModel.getString("unit", langCode)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                readOnly = true,
+                                trailingIcon = {
+                                    Icon(Icons.Default.ArrowDropDown, null)
+                                }
+                            )
+                            // Click overlay
+                            Box(modifier = Modifier.matchParentSize().clickable { showEditUnitDropdown = true })
+
+                            DropdownMenu(
+                                expanded = showEditUnitDropdown,
+                                onDismissRequest = { showEditUnitDropdown = false },
+                                modifier = Modifier.fillMaxWidth(0.3f)
+                            ) {
+                                listOf("100", "75", "50", "25").forEach { valPct ->
+                                    val isSel = editUnit == (if (valPct == "100") "1" else (valPct.toDouble() / 100.0).toString())
+                                    DropdownMenuItem(
+                                        text = { Text(if (valPct == "100") "100% (Full)" else "$valPct%", fontWeight = FontWeight.Bold) },
+                                        onClick = {
+                                            editUnit = if (valPct == "100") "1" else (valPct.toDouble() / 100.0).toString()
+                                            showEditUnitDropdown = false
+                                        },
+                                        leadingIcon = {
+                                            if (isSel) Icon(Icons.Default.Check, null, modifier = Modifier.size(18.dp), tint = theme.start)
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -243,15 +274,44 @@ fun ManageItemsScreen(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         )
+                    var showUnitDropdown by remember { mutableStateOf(false) }
+                    Box(modifier = Modifier.weight(1f)) {
                         OutlinedTextField(
-                            value = unit,
-                            onValueChange = { unit = it },
+                            value = if (unit == "1") "100%" else if (unit.toDoubleOrNull() != null) "${(unit.toDouble() * 100).toInt()}%" else unit,
+                            onValueChange = { },
                             label = { Text(viewModel.getString("unit", langCode)) },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(Icons.Default.ArrowDropDown, null)
+                            }
                         )
+                        // Click overlay
+                        Box(modifier = Modifier.matchParentSize().clickable { showUnitDropdown = true })
+
+                        DropdownMenu(
+                            expanded = showUnitDropdown,
+                            onDismissRequest = { showUnitDropdown = false },
+                            modifier = Modifier.fillMaxWidth(0.4f)
+                        ) {
+                            listOf("100", "75", "50", "25").forEach { valPct ->
+                                val isSel = unit == (if (valPct == "100") "1" else (valPct.toDouble() / 100.0).toString())
+                                DropdownMenuItem(
+                                    text = { Text(if (valPct == "100") "100% (Full)" else "$valPct%", fontWeight = FontWeight.Bold) },
+                                    onClick = {
+                                        unit = if (valPct == "100") "1" else (valPct.toDouble() / 100.0).toString()
+                                        showUnitDropdown = false
+                                    },
+                                    leadingIcon = {
+                                        if (isSel) Icon(Icons.Default.Check, null, modifier = Modifier.size(18.dp), tint = theme.start)
+                                    }
+                                )
+                            }
+                        }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
                             if (name.isNotBlank() && price.isNotBlank()) {

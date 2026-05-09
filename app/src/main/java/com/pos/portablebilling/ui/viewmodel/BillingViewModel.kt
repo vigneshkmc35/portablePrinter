@@ -72,14 +72,20 @@ class BillingViewModel(
         .stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
 
     fun addNewProduct(name: String, unit: String, price: Double) {
+        val exists = catalogItems.value.any { it.name.trim().equals(name.trim(), ignoreCase = true) }
+        if (exists) return
+
         viewModelScope.launch {
-            useCases.saveItem(ProductItem(name = name, unit = unit, price = price))
+            useCases.saveItem(ProductItem(name = name.trim(), unit = unit, price = price))
         }
     }
 
     fun updateProduct(item: ProductItem, name: String, unit: String, price: Double) {
+        val exists = catalogItems.value.any { it.id != item.id && it.name.trim().equals(name.trim(), ignoreCase = true) }
+        if (exists) return
+
         viewModelScope.launch {
-            useCases.saveItem(item.copy(name = name, unit = unit, price = price))
+            useCases.saveItem(item.copy(name = name.trim(), unit = unit, price = price))
         }
     }
 
@@ -107,6 +113,7 @@ class BillingViewModel(
                     productName = product.name,
                     quantity = quantity,
                     pricePerUnit = product.price,
+                    unit = product.unit,
                     totalPrice = quantity * product.price
                 )
             )

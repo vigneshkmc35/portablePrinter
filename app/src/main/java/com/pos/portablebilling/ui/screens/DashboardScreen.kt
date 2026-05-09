@@ -1,5 +1,7 @@
 package com.pos.portablebilling.ui.screens
 
+import android.R.attr.theme
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -21,11 +23,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.*
+import androidx.compose.material3.SwipeToDismiss
+import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.DismissValue
+import androidx.compose.material3.DismissDirection
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,12 +63,18 @@ fun DashboardScreen(
 ) {
     val catalogItems by viewModel.catalogItems.collectAsState()
     val cartItems    by viewModel.cartItems.collectAsState()
-    val cartTotal    by viewModel.cartTotal.collectAsState()
+    val cartTotal by viewModel.cartTotal.collectAsState()
+    val printerConnected by viewModel.printerConnected.collectAsState()
     val themeIndex   by viewModel.themeIndex.collectAsState()
     val langCode     by viewModel.langCode.collectAsState()
     val theme = appThemes[themeIndex]
 
-    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    var productToQty by remember { mutableStateOf<ProductItem?>(null) }
+    var selectedAccent by remember { mutableStateOf(theme.start) }
+    var qtyInput by remember { mutableStateOf("1") }
+    var isEditingCart by remember { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
 
     var searchQuery by remember { mutableStateOf("") }
     val filteredItems = remember(searchQuery, catalogItems) {
@@ -136,17 +154,57 @@ fun DashboardScreen(
                     contentPadding = PaddingValues(vertical = 6.dp)
                 ) {
                     items(cartItems, key = { it.productId }) { item ->
-                            CartItemRow(
-                                item = item,
-                                viewModel = viewModel,
-                                accentColor = cardAccents[catalogItems.indexOfFirst { it.id == item.productId }.coerceAtLeast(0) % cardAccents.size],
-                                onIncrease = {
-                                    val product = catalogItems.find { it.id == item.productId }
-                                    if (product != null) viewModel.addToCart(product, 1.0)
-                                },
-                                onDecrease = { viewModel.removeProductFromCart(item.productId) },
-                                onSetQuantity = { qty -> viewModel.setProductQuantity(item.productId, qty) }
-                            )
+                        val dismissState = rememberDismissState(
+                            confirmValueChange = {
+                                if (it == DismissValue.DismissedToStart) {
+                                    viewModel.setProductQuantity(item.productId, 0.0)
+                                    true
+                                } else false
+                            }
+                        )
+
+                        SwipeToDismiss(
+                            state = dismissState,
+                            directions = setOf(DismissDirection.EndToStart),
+                            background = {
+                                val color by animateColorAsState(
+                                    when (dismissState.targetValue) {
+                                        DismissValue.DismissedToStart -> Color.Red.copy(alpha = 0.8f)
+                                        else -> Color.Transparent
+                                    }
+                                )
+                                Box(
+                                    Modifier.fillMaxSize().background(color, RoundedCornerShape(16.dp)).padding(horizontal = 20.dp),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    Icon(Icons.Default.Delete, null, tint = Color.White)
+                                }
+                            },
+                            dismissContent = {
+                                CartItemRow(
+                                    item = item,
+                                    viewModel = viewModel,
+                                    langCode = langCode,
+                                    accentColor = cardAccents[catalogItems.indexOfFirst { it.id == item.productId }.coerceAtLeast(0) % cardAccents.size],
+                                    onIncrease = {
+                                        val product = catalogItems.find { it.id == item.productId }
+                                        if (product != null) viewModel.addToCart(product, 1.0)
+                                    },
+                                    onDecrease = { viewModel.removeProductFromCart(item.productId) },
+                                    onSetQuantity = { qty -> viewModel.setProductQuantity(item.productId, qty) },
+                                    onItemClick = {
+                                        val product = catalogItems.find { it.id == item.productId }
+                                        if (product != null) {
+                                            productToQty = product
+                                            selectedAccent = cardAccents[catalogItems.indexOfFirst { it.id == item.productId }.coerceAtLeast(0) % cardAccents.size]
+                                            val baseUnitValue = product.unit.toDoubleOrNull() ?: 1.0
+                                            qtyInput = (item.quantity * baseUnitValue).toString()
+                                            isEditingCart = true
+                                        }
+                                    }
+                                )
+                            }
+                        )
                     }
                 }
             } else {
@@ -231,15 +289,37 @@ fun DashboardScreen(
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                                             singleLine = true
                                         )
-                                        OutlinedTextField(
-                                            value = quickAddUnit,
-                                            onValueChange = { quickAddUnit = it },
-                                            label = { Text(viewModel.getString("unit", langCode)) },
-                                            modifier = Modifier.weight(0.8f),
-                                            shape = RoundedCornerShape(12.dp),
-                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                            singleLine = true
-                                        )
+                                        var showQuickUnitDropdown by remember { mutableStateOf(false) }
+                                        Box(modifier = Modifier.weight(0.8f)) {
+                                            OutlinedTextField(
+                                                value = if (quickAddUnit == "1") "100%" else if (quickAddUnit.toDoubleOrNull() != null) "${(quickAddUnit.toDouble() * 100).toInt()}%" else quickAddUnit,
+                                                onValueChange = { },
+                                                label = { Text(viewModel.getString("unit", langCode)) },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                shape = RoundedCornerShape(12.dp),
+                                                readOnly = true,
+                                                trailingIcon = {
+                                                    Icon(Icons.Default.ArrowDropDown, null)
+                                                }
+                                            )
+                                            Box(modifier = Modifier.matchParentSize().clickable { showQuickUnitDropdown = true })
+
+                                            DropdownMenu(
+                                                expanded = showQuickUnitDropdown,
+                                                onDismissRequest = { showQuickUnitDropdown = false },
+                                                modifier = Modifier.fillMaxWidth(0.3f)
+                                            ) {
+                                                listOf("100", "75", "50", "25").forEach { valPct ->
+                                                    DropdownMenuItem(
+                                                        text = { Text(if (valPct == "100") "100% (Full)" else "$valPct%", fontWeight = FontWeight.Bold) },
+                                                        onClick = {
+                                                            quickAddUnit = if (valPct == "100") "1" else (valPct.toDouble() / 100.0).toString()
+                                                            showQuickUnitDropdown = false
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
                                     Spacer(modifier = Modifier.height(12.dp))
                                     Button(
@@ -274,10 +354,134 @@ fun DashboardScreen(
                         ) {
                             items(filteredItems, key = { it.id }) { product ->
                                 val accent = cardAccents[filteredItems.indexOf(product) % cardAccents.size]
-                                ProductCard(product, accent, viewModel) {
-                                    viewModel.addToCart(product, 1.0)
-                                    searchQuery = ""
+                                ProductCard(product, accent, viewModel, langCode) {
+                                    productToQty = product
+                                    selectedAccent = accent
+                                    qtyInput = product.unit
+                                    isEditingCart = false
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Premium Quantity Dialog ──
+            productToQty?.let { product ->
+                val baseUnit = product.unit.toDoubleOrNull() ?: 1.0
+                val unitPrice = product.price
+                
+                // Real-time total calculation based on portions
+                val currentPortionInput = qtyInput.toDoubleOrNull() ?: 0.0
+                val totalForDialog = (currentPortionInput / baseUnit) * unitPrice
+                
+                Dialog(onDismissRequest = { productToQty = null }) {
+                    Card(
+                        shape = RoundedCornerShape(28.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // Header
+                            Box(
+                                modifier = Modifier.size(60.dp).background(selectedAccent.copy(alpha = 0.1f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Favorite, contentDescription = null, tint = selectedAccent, modifier = Modifier.size(30.dp))
+                            }
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(product.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+                            Text("₹$unitPrice / ${if(baseUnit == 1.0) "Unit" else baseUnit.toString()}", color = Color.Gray)
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            // Large Quantity Input
+                            OutlinedTextField(
+                                value = qtyInput,
+                                onValueChange = { 
+                                    if (it.length <= 6 && (it.isEmpty() || it.toDoubleOrNull() != null)) {
+                                        qtyInput = it 
+                                    }
+                                },
+                                label = { Text("Quantity / Portion") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                textStyle = MaterialTheme.typography.headlineMedium.copy(textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontWeight = FontWeight.Black),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = selectedAccent,
+                                    unfocusedBorderColor = Color(0xFFE5E7EB),
+                                    focusedLabelColor = selectedAccent
+                                )
+                            )
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            // Quick Percentage Chips in Dialog
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf(0.25, 0.5, 0.75, 1.0).forEach { fraction ->
+                                    val label = when(fraction) {
+                                        0.25 -> "25%"
+                                        0.5 -> "50%"
+                                        0.75 -> "75%"
+                                        else -> "100%"
+                                    }
+                                    val isSelectedChip = if(qtyInput.toDoubleOrNull() != null) qtyInput.toDouble() == fraction else false
+                                    Surface(
+                                        modifier = Modifier.weight(1f).height(40.dp).clickable { 
+                                            qtyInput = fraction.toString() // Set the portion amount directly (0.25, 0.5, etc.)
+                                            if (qtyInput.length > 6) qtyInput = qtyInput.take(6)
+                                        },
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = if(isSelectedChip) selectedAccent.copy(alpha = 0.1f) else Color(0xFFF3F4F6),
+                                        border = BorderStroke(1.dp, if(isSelectedChip) selectedAccent else Color(0xFFE5E7EB))
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if(isSelectedChip) selectedAccent else Color.Black)
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            // Final Price & Add Button
+                            Button(
+                                onClick = {
+                                    val currentPortion = qtyInput.toDoubleOrNull() ?: baseUnit
+                                    val itemsToAddOrSet = currentPortion / baseUnit
+                                    if (isEditingCart) {
+                                        viewModel.setProductQuantity(product.id, itemsToAddOrSet)
+                                    } else {
+                                        viewModel.addToCart(product, itemsToAddOrSet)
+                                    }
+                                    productToQty = null
+                                },
+                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = selectedAccent)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        if (isEditingCart) "UPDATE BILL" else "ADD TO BILL",
+                                        fontWeight = FontWeight.Black,
+                                        letterSpacing = 1.sp
+                                    )
+                                    Text("₹${String.format("%.2f", totalForDialog)}", fontWeight = FontWeight.Black, fontSize = 18.sp)
+                                }
+                            }
+                            
+                            TextButton(onClick = { productToQty = null }, modifier = Modifier.padding(top = 8.dp)) {
+                                Text("Cancel", color = Color.Gray)
                             }
                         }
                     }
@@ -289,7 +493,7 @@ fun DashboardScreen(
 
 // ── Soft Product Card ──
 @Composable
-fun ProductCard(product: ProductItem, accent: Color, viewModel: BillingViewModel, onClick: () -> Unit) {
+fun ProductCard(product: ProductItem, accent: Color, viewModel: BillingViewModel, langCode: String, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -352,14 +556,16 @@ fun CartItemRow(
     item: TransactionItem, 
     accentColor: Color, 
     viewModel: BillingViewModel,
+    langCode: String,
     onIncrease: () -> Unit, 
     onDecrease: () -> Unit,
-    onSetQuantity: (Double) -> Unit
+    onSetQuantity: (Double) -> Unit,
+    onItemClick: () -> Unit
 ) {
     val qtyDisplay = if (item.quantity % 1.0 == 0.0) item.quantity.toInt().toString() else item.quantity.toString()
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onItemClick() },
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -387,14 +593,23 @@ fun CartItemRow(
                         .padding(horizontal = 4.dp, vertical = 2.dp)
                 ) {
                     IconButton(onClick = onDecrease, modifier = Modifier.size(30.dp)) {
-                        Icon(Icons.Default.Clear, null, modifier = Modifier.size(16.dp), tint = Color(0xFF4B5563))
+                        Icon(Icons.Default.Remove, null, modifier = Modifier.size(16.dp), tint = Color(0xFF4B5563))
                     }
-                    Text(
-                        qtyDisplay,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 15.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+                val baseUnitValue = item.unit.toDoubleOrNull()
+                val displayQty = if (baseUnitValue != null) {
+                    val total = item.quantity * baseUnitValue
+                    if (total % 1.0 == 0.0) total.toInt().toString() else total.toString()
+                } else {
+                    qtyDisplay
+                }
+                val displayUnit = if (baseUnitValue != null) "" else item.unit
+
+                Text(
+                    if (displayUnit.isBlank()) displayQty else "$displayQty $displayUnit",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 15.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
                     IconButton(onClick = onIncrease, modifier = Modifier.size(30.dp)) {
                         Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp), tint = Color(0xFF4B5563))
                     }
@@ -402,7 +617,7 @@ fun CartItemRow(
 
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    "₹${item.totalPrice}",
+                    "₹${String.format("%.2f", item.totalPrice)}",
                     fontWeight = FontWeight.Black,
                     fontSize = 16.sp,
                     color = Color(0xFF111827)
@@ -415,12 +630,18 @@ fun CartItemRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 listOf(0.25, 0.5, 0.75, 1.0).forEach { fraction ->
-                    val isSelected = item.quantity == fraction
+                    val baseUnitValue = item.unit.toDoubleOrNull() ?: 1.0
+                    val currentPortion = item.quantity * baseUnitValue
+                    val isSelected = currentPortion == fraction
                     Surface(
                         modifier = Modifier
                             .weight(1f)
                             .height(30.dp)
-                            .clickable { onSetQuantity(fraction) },
+                            .clickable { 
+                                // Calculate how many units are needed to reach this fraction
+                                val newQuantity = fraction / baseUnitValue
+                                onSetQuantity(newQuantity)
+                            },
                         shape = RoundedCornerShape(8.dp),
                         color = if (isSelected) accentColor.copy(alpha = 0.15f) else Color(0xFFF9FAFB),
                         border = BorderStroke(1.dp, if (isSelected) accentColor else Color(0xFFE5E7EB))

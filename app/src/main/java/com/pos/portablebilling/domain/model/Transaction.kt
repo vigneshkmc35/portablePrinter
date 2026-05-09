@@ -12,5 +12,6 @@ data class TransactionItem(
     val productName: String,
     val quantity: Double,
     val pricePerUnit: Double,
+    val unit: String,
     val totalPrice: Double
 )
