@@ -43,7 +43,9 @@ class BillingViewModel(
         languageManager.loadLanguage(code)
     }
 
-    fun getString(key: String): String = languageManager.getString(key)
+    fun getString(key: String, currentLang: String): String {
+        return languageManager.getString(key)
+    }
 
     // Theme index (persisted)
     private val _themeIndex = MutableStateFlow(prefs.getInt(PREF_THEME, 0))

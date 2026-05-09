@@ -74,7 +74,7 @@ fun DashboardScreen(
             Box(modifier = Modifier.background(headerBrush)) {
                 TopAppBar(
                     title = {
-                        Text(viewModel.getString("app_name"), fontWeight = FontWeight.ExtraBold, color = Color.White, fontSize = 20.sp)
+                        Text(viewModel.getString("app_name", langCode), fontWeight = FontWeight.ExtraBold, color = Color.White, fontSize = 20.sp)
                     },
                     actions = {
                         IconButton(onClick = onNavigateToSettings) {
@@ -97,9 +97,9 @@ fun DashboardScreen(
                         modifier = Modifier.padding(horizontal = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Check, viewModel.getString("print_bill"))
+                        Icon(Icons.Default.Check, viewModel.getString("print_bill", langCode))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("${viewModel.getString("print_bill")} • ₹$cartTotal", fontWeight = FontWeight.Bold)
+                        Text("${viewModel.getString("print_bill", langCode)} • ₹$cartTotal", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -120,14 +120,14 @@ fun DashboardScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        viewModel.getString("current_bill"),
+                        viewModel.getString("current_bill", langCode),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Black,
                         color = Color(0xFF6B7280),
                         letterSpacing = 1.sp
                     )
                     TextButton(onClick = { viewModel.clearCart() }) {
-                        Text(viewModel.getString("clear_all"), color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(viewModel.getString("clear_all", langCode), color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 LazyColumn(
@@ -151,7 +151,7 @@ fun DashboardScreen(
                 }
             } else {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(viewModel.getString("tap_to_start"), color = Color(0xFF9CA3AF), fontSize = 15.sp)
+                    Text(viewModel.getString("tap_to_start", langCode), color = Color(0xFF9CA3AF), fontSize = 15.sp)
                 }
             }
 
@@ -169,8 +169,8 @@ fun DashboardScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            if (searchQuery.isBlank()) "PRODUCTS (${catalogItems.size})"
-                            else "RESULTS (${filteredItems.size})",
+                            if (searchQuery.isBlank()) "${viewModel.getString("products", langCode)} (${catalogItems.size})"
+                            else "${viewModel.getString("results", langCode)} (${filteredItems.size})",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Black,
                             color = Color(0xFF6B7280),
@@ -182,7 +182,7 @@ fun DashboardScreen(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text(viewModel.getString("search_placeholder"), color = Color.Gray) },
+                        placeholder = { Text(viewModel.getString("search_placeholder", langCode), color = Color.Gray) },
                         leadingIcon = { Icon(Icons.Default.Search, null, tint = theme.start) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
@@ -207,7 +207,7 @@ fun DashboardScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                viewModel.getString("product_not_found"),
+                                viewModel.getString("product_not_found", langCode),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.Gray
                             )
@@ -225,7 +225,7 @@ fun DashboardScreen(
                                         OutlinedTextField(
                                             value = quickAddPrice,
                                             onValueChange = { quickAddPrice = it },
-                                            label = { Text(viewModel.getString("price")) },
+                                            label = { Text(viewModel.getString("price", langCode)) },
                                             modifier = Modifier.weight(1f),
                                             shape = RoundedCornerShape(12.dp),
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
@@ -234,7 +234,7 @@ fun DashboardScreen(
                                         OutlinedTextField(
                                             value = quickAddUnit,
                                             onValueChange = { quickAddUnit = it },
-                                            placeholder = { Text("Unit") },
+                                            label = { Text(viewModel.getString("unit", langCode)) },
                                             modifier = Modifier.weight(0.8f),
                                             shape = RoundedCornerShape(12.dp),
                                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -256,14 +256,14 @@ fun DashboardScreen(
                                     ) {
                                         Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(viewModel.getString("create_product"), fontWeight = FontWeight.Bold)
+                                        Text(viewModel.getString("create_product", langCode), fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
                         }
                     } else if (filteredItems.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(viewModel.getString("no_products"), color = Color.Gray)
+                            Text(viewModel.getString("no_products", langCode), color = Color.Gray)
                         }
                     } else {
                         LazyVerticalGrid(
@@ -336,7 +336,7 @@ fun ProductCard(product: ProductItem, accent: Color, viewModel: BillingViewModel
                     color = accent
                 )
                 Text(
-                    "${viewModel.getString("per")} ${product.unit}",
+                    "${viewModel.getString("per", langCode)} ${product.unit}",
                     fontSize = 11.sp,
                     color = Color(0xFF9CA3AF),
                     fontWeight = FontWeight.Medium
@@ -376,7 +376,7 @@ fun CartItemRow(
                 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(item.productName, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF1F2937))
-                    Text("₹${item.pricePerUnit} / ${viewModel.getString("unit")}", fontSize = 12.sp, color = Color(0xFF9CA3AF))
+                    Text("₹${item.pricePerUnit} / ${viewModel.getString("unit", langCode)}", fontSize = 12.sp, color = Color(0xFF9CA3AF))
                 }
 
                 // Qty controls
