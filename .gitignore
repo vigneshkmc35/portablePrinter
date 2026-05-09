@@ -1,0 +1,23 @@
+# Gradle files
+.gradle/
+build/
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Android Studio files
+captures/
+/local.properties
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aar
+
+# OS X files
+.DS_Store
+
+# Log files
+*.log
