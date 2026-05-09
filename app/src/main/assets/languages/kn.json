@@ -1,0 +1,23 @@
+{
+  "app_name": "ಪೋರ್ಟಬಲ್ ಬಿಲ್ಲಿಂಗ್",
+  "manage_inventory": "ದಾಸ್ತಾನು ನಿರ್ವಹಣೆ",
+  "current_bill": "ಪ್ರಸ್ತುತ ಬಿಲ್",
+  "clear_all": "ಎಲ್ಲವನ್ನೂ ಅಳಿಸಿ",
+  "tap_to_start": "ಬಿಲ್ಲಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಉತ್ಪನ್ನವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ",
+  "products": "ಉತ್ಪನ್ನಗಳು",
+  "results": "ಫಲಿತಾಂಶಗಳು",
+  "search_placeholder": "ಹುಡುಕಿ...",
+  "product_not_found": "ಉತ್ಪನ್ನ ಸಿಗಲಿಲ್ಲ. ಸೇರಿಸಬೇಕೆ?",
+  "price": "ಬೆಲೆ",
+  "unit": "ಘಟಕ",
+  "create_product": "ಉತ್ಪನ್ನವನ್ನು ರಚಿಸಿ",
+  "add_new_product": "ಹೊಸ ಉತ್ಪನ್ನ",
+  "save_product": "ಉತ್ಪನ್ನವನ್ನು ಉಳಿಸಿ",
+  "existing_inventory": "ದಾಸ್ತಾನು",
+  "connect_printer": "ಪ್ರಿಂಟರ್ ಸಂಪರ್ಕಿಸಿ",
+  "edit_product": "ತಿದ್ದುಪಡಿ",
+  "print_bill": "ಬಿಲ್ ಪ್ರಿಂಟ್ ಮಾಡಿ",
+  "no_products": "ಯಾವುದೇ ಉತ್ಪನ್ನಗಳಿಲ್ಲ",
+  "selected_theme": "ಆಯ್ದ ಥೀಮ್",
+  "app_theme": "ಅಪ್ಲಿಕೇಶನ್ ಥೀಮ್"
+  ,"per": "ಪ್ರತಿ", "cancel": "ರದ್ದುಮಾಡಿ" }

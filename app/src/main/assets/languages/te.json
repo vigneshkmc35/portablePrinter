@@ -1,0 +1,23 @@
+{
+  "app_name": "పోర్టబుల్ బిల్లింగ్",
+  "manage_inventory": "ఇన్వెంటరీ మేనేజ్మెంట్",
+  "current_bill": "ప్రస్తుత బిల్లు",
+  "clear_all": "అన్నీ తీసివేయి",
+  "tap_to_start": "బిల్లింగ్ ప్రారంభించడానికి ఒక ఉత్పత్తిని నొక్కండి",
+  "products": "ఉత్పత్తులు",
+  "results": "ఫలితాలు",
+  "search_placeholder": "వెతకండి...",
+  "product_not_found": "ఉత్పత్తి కనిపించలేదు. జోడించాలా?",
+  "price": "ధర",
+  "unit": "యూనిట్",
+  "create_product": "ఉత్పత్తిని సృష్టించండి",
+  "add_new_product": "కొత్త ఉత్పత్తి",
+  "save_product": "ఉత్పత్తిని సేవ్ చేయండి",
+  "existing_inventory": "స్టాక్",
+  "connect_printer": "ప్రింటర్‌ను కనెక్ట్ చేయండి",
+  "edit_product": "సవరించు",
+  "print_bill": "బిల్లును ప్రింట్ చేయండి",
+  "no_products": "ఉత్పత్తులు అందుబాటులో లేవు",
+  "selected_theme": "ఎంచుకున్న థీమ్",
+  "app_theme": "యాప్ థీమ్"
+  ,"per": "ప్రతి", "cancel": "రద్దు" }

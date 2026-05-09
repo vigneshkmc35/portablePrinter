@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -32,6 +33,7 @@ import androidx.compose.ui.window.Dialog
 import com.pos.portablebilling.domain.model.ProductItem
 import com.pos.portablebilling.ui.theme.appThemes
 import com.pos.portablebilling.ui.viewmodel.BillingViewModel
+import com.pos.portablebilling.util.availableLanguages
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +53,7 @@ fun ManageItemsScreen(
 
     val catalogItems by viewModel.catalogItems.collectAsState()
     val themeIndex by viewModel.themeIndex.collectAsState()
+    val langCode by viewModel.langCode.collectAsState()
     val theme = appThemes[themeIndex]
 
     // Search state
@@ -61,6 +64,7 @@ fun ManageItemsScreen(
     }
 
     var showThemePicker by remember { mutableStateOf(false) }
+    var showLangPicker by remember { mutableStateOf(false) }
 
     val gradientBrush = Brush.linearGradient(
         colors = listOf(theme.start, theme.end)
@@ -75,7 +79,7 @@ fun ManageItemsScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Text("EDIT PRODUCT", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black, color = Color.Gray)
+                    Text(viewModel.getString("edit_product"), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black, color = Color.Gray)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
@@ -110,7 +114,7 @@ fun ManageItemsScreen(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(50)
                         ) {
-                            Text("Cancel")
+                            Text(viewModel.getString("clear_all")) // Reusing clear_all or just "Cancel"
                         }
                         Button(
                             onClick = {
@@ -128,7 +132,7 @@ fun ManageItemsScreen(
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(containerColor = theme.start)
                         ) {
-                            Text("Save")
+                            Text(viewModel.getString("save_product"))
                         }
                     }
                 }
@@ -140,13 +144,29 @@ fun ManageItemsScreen(
         topBar = {
             Box(modifier = Modifier.background(gradientBrush)) {
                 TopAppBar(
-                    title = { Text("Manage Inventory", fontWeight = FontWeight.Bold, color = Color.White) },
+                    title = { Text(viewModel.getString("manage_inventory"), fontWeight = FontWeight.Bold, color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(Icons.Default.ArrowBack, "Back", tint = Color.White)
                         }
                     },
                     actions = {
+                        Box {
+                            IconButton(onClick = { showLangPicker = true }) {
+                                Icon(Icons.Default.Public, "Language", tint = Color.White)
+                            }
+                            DropdownMenu(expanded = showLangPicker, onDismissRequest = { showLangPicker = false }) {
+                                availableLanguages.forEach { lang ->
+                                    DropdownMenuItem(
+                                        text = { Text(lang.name) },
+                                        onClick = {
+                                            viewModel.setLanguage(lang.code)
+                                            showLangPicker = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
                         Box {
                             IconButton(onClick = { showThemePicker = !showThemePicker }) {
                                 Icon(Icons.Default.Favorite, "Theme", tint = Color.White)
@@ -156,39 +176,23 @@ fun ManageItemsScreen(
                                 onDismissRequest = { showThemePicker = false }
                             ) {
                                 Text(
-                                    "APP THEME",
+                                    viewModel.getString("app_theme"),
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Black,
                                     color = Color.Gray,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                                 )
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    appThemes.forEachIndexed { index, t ->
-                                        val selected = themeIndex == index
-                                        val brush = Brush.linearGradient(colors = listOf(t.start, t.end))
-                                        Box(
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .clip(CircleShape)
-                                                .background(brush)
-                                                .then(
-                                                    if (selected) Modifier.border(2.5.dp, Color(0xFF444444), CircleShape)
-                                                    else Modifier
-                                                )
-                                                .clickable {
-                                                    viewModel.setThemeIndex(index)
-                                                    showThemePicker = false
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            if (selected) {
-                                                Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.size(18.dp))
-                                            }
+                                appThemes.forEachIndexed { idx, t ->
+                                    DropdownMenuItem(
+                                        text = { Text(t.name) },
+                                        onClick = {
+                                            viewModel.setThemeIndex(idx)
+                                            showThemePicker = false
+                                        },
+                                        leadingIcon = {
+                                            Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(t.start))
                                         }
-                                    }
+                                    )
                                 }
                             }
                         }
@@ -211,30 +215,25 @@ fun ManageItemsScreen(
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        "ADD NEW PRODUCT",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Black,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(viewModel.getString("add_new_product"), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
-                        label = { Text("Product Name (e.g. Rice)") },
+                        label = { Text(viewModel.getString("search_placeholder")) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedTextField(
                             value = price,
                             onValueChange = { price = it },
-                            label = { Text("Price (Rs)") },
+                            label = { Text(viewModel.getString("price")) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
@@ -242,12 +241,12 @@ fun ManageItemsScreen(
                         OutlinedTextField(
                             value = unit,
                             onValueChange = { unit = it },
-                            label = { Text("Unit") },
+                            label = { Text(viewModel.getString("unit")) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
                             if (name.isNotBlank() && price.isNotBlank()) {
@@ -255,28 +254,25 @@ fun ManageItemsScreen(
                                 name = ""; unit = ""; price = ""
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(50),
                         colors = ButtonDefaults.buttonColors(containerColor = theme.start)
                     ) {
-                        Text("Save Product", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(viewModel.getString("save_product"), fontWeight = FontWeight.Bold)
                     }
                 }
             }
-
-            Text(
-                text = if (searchQuery.isBlank()) "EXISTING INVENTORY (${catalogItems.size})" else "RESULTS (${filteredItems.size})",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Black,
-                color = Color.Gray,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Text(viewModel.getString("existing_inventory") + " (${filteredItems.size})", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray, modifier = Modifier.padding(horizontal = 16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // ── Search bar ──
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search inventory…") },
+                placeholder = { Text(viewModel.getString("search_placeholder")) },
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFF6200EA))
                 },
@@ -321,7 +317,7 @@ fun ManageItemsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(item.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF1F2937))
-                                Text("Rs.${item.price} per ${item.unit}", fontSize = 14.sp, color = Color.Gray)
+                                Text("Rs.${item.price} ${viewModel.getString("per")} ${item.unit}", fontSize = 14.sp, color = Color.Gray)
                             }
 
                             // Edit button
@@ -356,7 +352,7 @@ fun ManageItemsScreen(
                 ) {
                     Icon(Icons.Default.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Connect Printer (ATPOS M80)", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(viewModel.getString("connect_printer"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
         }

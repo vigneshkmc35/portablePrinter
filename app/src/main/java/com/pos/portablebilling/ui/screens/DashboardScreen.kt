@@ -53,6 +53,7 @@ fun DashboardScreen(
     val cartItems    by viewModel.cartItems.collectAsState()
     val cartTotal    by viewModel.cartTotal.collectAsState()
     val themeIndex   by viewModel.themeIndex.collectAsState()
+    val langCode     by viewModel.langCode.collectAsState()
     val theme = appThemes[themeIndex]
 
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
@@ -73,7 +74,7 @@ fun DashboardScreen(
             Box(modifier = Modifier.background(headerBrush)) {
                 TopAppBar(
                     title = {
-                        Text("Portable Billing", fontWeight = FontWeight.ExtraBold, color = Color.White, fontSize = 20.sp)
+                        Text(viewModel.getString("app_name"), fontWeight = FontWeight.ExtraBold, color = Color.White, fontSize = 20.sp)
                     },
                     actions = {
                         IconButton(onClick = onNavigateToSettings) {
@@ -96,9 +97,9 @@ fun DashboardScreen(
                         modifier = Modifier.padding(horizontal = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Check, "Print Bill")
+                        Icon(Icons.Default.Check, viewModel.getString("print_bill"))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("PRINT BILL  •  ₹$cartTotal", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
+                        Text("${viewModel.getString("print_bill")} • ₹$cartTotal", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -119,14 +120,14 @@ fun DashboardScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "CURRENT BILL",
+                        viewModel.getString("current_bill"),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Black,
                         color = Color(0xFF6B7280),
                         letterSpacing = 1.sp
                     )
                     TextButton(onClick = { viewModel.clearCart() }) {
-                        Text("Clear All", color = Color.Red, fontSize = 12.sp)
+                        Text(viewModel.getString("clear_all"), color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 LazyColumn(
@@ -149,7 +150,7 @@ fun DashboardScreen(
                 }
             } else {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text("Tap a product below to start billing", color = Color(0xFF9CA3AF), fontSize = 15.sp)
+                    Text(viewModel.getString("tap_to_start"), color = Color(0xFF9CA3AF), fontSize = 15.sp)
                 }
             }
 
@@ -180,7 +181,7 @@ fun DashboardScreen(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search products…", fontSize = 14.sp) },
+                        placeholder = { Text(viewModel.getString("search_placeholder"), color = Color.Gray) },
                         leadingIcon = { Icon(Icons.Default.Search, null, tint = theme.start) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
@@ -205,7 +206,7 @@ fun DashboardScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                "Product not found. Quick add?",
+                                viewModel.getString("product_not_found"),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.Gray
                             )
@@ -223,7 +224,7 @@ fun DashboardScreen(
                                         OutlinedTextField(
                                             value = quickAddPrice,
                                             onValueChange = { quickAddPrice = it },
-                                            placeholder = { Text("Price") },
+                                            label = { Text(viewModel.getString("price")) },
                                             modifier = Modifier.weight(1f),
                                             shape = RoundedCornerShape(12.dp),
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
@@ -254,14 +255,14 @@ fun DashboardScreen(
                                     ) {
                                         Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Create Product", fontWeight = FontWeight.Bold)
+                                        Text(viewModel.getString("create_product"), fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
                         }
                     } else if (filteredItems.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("No products available", color = Color.Gray)
+                            Text(viewModel.getString("no_products"), color = Color.Gray)
                         }
                     } else {
                         LazyVerticalGrid(
@@ -334,7 +335,7 @@ fun ProductCard(product: ProductItem, accent: Color, onClick: () -> Unit) {
                     color = accent
                 )
                 Text(
-                    "per ${product.unit}",
+                    "${viewModel.getString("per")} ${product.unit}",
                     fontSize = 11.sp,
                     color = Color(0xFF9CA3AF),
                     fontWeight = FontWeight.Medium

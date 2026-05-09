@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 const val PREF_THEME = "pref_theme_index"
+const val PREF_LANG = "pref_lang_code"
 
 class BillingViewModel(
     application: Application,
@@ -27,6 +28,22 @@ class BillingViewModel(
 
     private val prefs = application.getSharedPreferences("billing_prefs", android.content.Context.MODE_PRIVATE)
     private val printerManager = BluetoothPrinterManager(application)
+    private val languageManager = com.pos.portablebilling.util.LanguageManager(application)
+
+    private val _langCode = MutableStateFlow(prefs.getString(PREF_LANG, "en") ?: "en")
+    val langCode: StateFlow<String> = _langCode.asStateFlow()
+
+    init {
+        languageManager.loadLanguage(_langCode.value)
+    }
+
+    fun setLanguage(code: String) {
+        _langCode.value = code
+        prefs.edit().putString(PREF_LANG, code).apply()
+        languageManager.loadLanguage(code)
+    }
+
+    fun getString(key: String): String = languageManager.getString(key)
 
     // Theme index (persisted)
     private val _themeIndex = MutableStateFlow(prefs.getInt(PREF_THEME, 0))

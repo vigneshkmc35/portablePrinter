@@ -1,0 +1,23 @@
+{
+  "app_name": "पोर्टेबल बिलिंग",
+  "manage_inventory": "इन्वेंट्री प्रबंधन",
+  "current_bill": "वर्तमान बिल",
+  "clear_all": "सभी हटाएं",
+  "tap_to_start": "बिलिंग शुरू करने के लिए किसी उत्पाद पर टैप करें",
+  "products": "उत्पाद",
+  "results": "परिणाम",
+  "search_placeholder": "खोजें...",
+  "product_not_found": "उत्पाद नहीं मिला। जोड़ें?",
+  "price": "कीमत",
+  "unit": "इकाई",
+  "create_product": "उत्पाद बनाएं",
+  "add_new_product": "नया उत्पाद",
+  "save_product": "उत्पाद सहेजें",
+  "existing_inventory": "स्टॉक",
+  "connect_printer": "प्रिंटर कनेक्ट करें",
+  "edit_product": "संपादित करें",
+  "print_bill": "बिल प्रिंट करें",
+  "no_products": "कोई उत्पाद उपलब्ध नहीं है",
+  "selected_theme": "चयनित थीम",
+  "app_theme": "ऐप थीम"
+  ,"per": "प्रति", "cancel": "रद्द करें" }

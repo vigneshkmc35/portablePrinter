@@ -1,0 +1,23 @@
+{
+  "app_name": "Portable Billing",
+  "manage_inventory": "Manage Inventory",
+  "current_bill": "CURRENT BILL",
+  "clear_all": "Clear All",
+  "tap_to_start": "Tap a product below to start billing",
+  "products": "PRODUCTS",
+  "results": "RESULTS",
+  "search_placeholder": "Search products...",
+  "product_not_found": "Product not found. Quick add?",
+  "price": "Price",
+  "unit": "Unit",
+  "create_product": "Create Product",
+  "add_new_product": "ADD NEW PRODUCT",
+  "save_product": "Save Product",
+  "existing_inventory": "EXISTING INVENTORY",
+  "connect_printer": "Connect Printer",
+  "edit_product": "EDIT PRODUCT",
+  "print_bill": "PRINT BILL",
+  "no_products": "No products available",
+  "selected_theme": "Selected Theme",
+  "app_theme": "APP THEME"
+  ,"per": "per", "cancel": "Cancel" }
