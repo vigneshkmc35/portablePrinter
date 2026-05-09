@@ -20,6 +20,9 @@ import kotlinx.coroutines.launch
 
 const val PREF_THEME = "pref_theme_index"
 const val PREF_LANG = "pref_lang_code"
+const val PREF_BIZ_NAME = "pref_biz_name"
+const val PREF_BIZ_PHONE = "pref_biz_phone"
+const val PREF_BIZ_ADDR = "pref_biz_addr"
 
 class BillingViewModel(
     application: Application,
@@ -33,8 +36,28 @@ class BillingViewModel(
     private val _langCode = MutableStateFlow(prefs.getString(PREF_LANG, "en") ?: "en")
     val langCode: StateFlow<String> = _langCode.asStateFlow()
 
+    private val _businessName = MutableStateFlow(prefs.getString(PREF_BIZ_NAME, "") ?: "")
+    val businessName = _businessName.asStateFlow()
+
+    private val _businessPhone = MutableStateFlow(prefs.getString(PREF_BIZ_PHONE, "") ?: "")
+    val businessPhone = _businessPhone.asStateFlow()
+
+    private val _businessAddress = MutableStateFlow(prefs.getString(PREF_BIZ_ADDR, "") ?: "")
+    val businessAddress = _businessAddress.asStateFlow()
+
     init {
         languageManager.loadLanguage(_langCode.value)
+    }
+
+    fun updateBusinessProfile(name: String, phone: String, address: String) {
+        _businessName.value = name
+        _businessPhone.value = phone
+        _businessAddress.value = address
+        prefs.edit()
+            .putString(PREF_BIZ_NAME, name)
+            .putString(PREF_BIZ_PHONE, phone)
+            .putString(PREF_BIZ_ADDR, address)
+            .apply()
     }
 
     fun setLanguage(code: String) {

@@ -181,58 +181,7 @@ fun ManageItemsScreen(
                             Icon(Icons.Default.ArrowBack, "Back", tint = Color.White)
                         }
                     },
-                    actions = {
-                        Box {
-                            IconButton(onClick = { showLangPicker = true }) {
-                                Icon(Icons.Default.Public, "Language", tint = Color.White)
-                            }
-                            DropdownMenu(expanded = showLangPicker, onDismissRequest = { showLangPicker = false }) {
-                                availableLanguages.forEach { lang ->
-                                    DropdownMenuItem(
-                                        text = { Text(lang.name, fontWeight = if (lang.code == langCode) FontWeight.Bold else FontWeight.Normal) },
-                                        trailingIcon = {
-                                            if (lang.code == langCode) {
-                                                Icon(Icons.Default.Check, null, modifier = Modifier.size(18.dp), tint = theme.start)
-                                            }
-                                        },
-                                        onClick = {
-                                            viewModel.setLanguage(lang.code)
-                                            showLangPicker = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        Box {
-                            IconButton(onClick = { showThemePicker = !showThemePicker }) {
-                                Icon(Icons.Default.Favorite, "Theme", tint = Color.White)
-                            }
-                            DropdownMenu(
-                                expanded = showThemePicker,
-                                onDismissRequest = { showThemePicker = false }
-                            ) {
-                                Text(
-                                    viewModel.getString("app_theme", langCode),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.Gray,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                                )
-                                appThemes.forEachIndexed { idx, t ->
-                                    DropdownMenuItem(
-                                        text = { Text(t.name) },
-                                        onClick = {
-                                            viewModel.setThemeIndex(idx)
-                                            showThemePicker = false
-                                        },
-                                        leadingIcon = {
-                                            Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(t.start))
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    },
+                    actions = { },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
                 )
             }
