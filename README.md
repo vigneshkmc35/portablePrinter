@@ -13,3 +13,4 @@ A modern, high-efficiency billing application for retail shop owners.
 - **Kotlin** & **Jetpack Compose**
 - **Room Database** for local storage
 - **Material Design 3**
+# portablePrinter
