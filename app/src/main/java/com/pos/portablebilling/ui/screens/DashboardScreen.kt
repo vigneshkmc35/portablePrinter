@@ -190,27 +190,64 @@ fun DashboardScreen(
             }
         },
         floatingActionButton = {
-            if (cartTotal > 0) {
-                FloatingActionButton(
+            if (cartTotal > 0 && (searchQuery.isBlank() || filteredItems.isNotEmpty())) {
+                Surface(
                     onClick = { showBillPreview = true },
-                    containerColor = Color(0xFF00C853),
-                    contentColor = Color.White,
-                    modifier = Modifier.padding(bottom = 8.dp).height(60.dp)
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+                        .fillMaxWidth(0.92f)
+                        .height(64.dp)
+                        .shadow(12.dp, RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Transparent
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Check, viewModel.getString("print_bill", langCode))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "${
-                                viewModel.getString(
-                                    "print_bill",
-                                    langCode
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF1B5E20), Color(0xFF2E7D32)) // Darker, more professional greens
                                 )
-                            } • ₹${String.format("%.2f", cartTotal)}", fontWeight = FontWeight.Bold
-                        )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Print, // Changed to Print icon
+                                    null, 
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    viewModel.getString("print_bill", langCode),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                            
+                            Surface(
+                                color = Color.White.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                            ) {
+                                Text(
+                                    "₹${String.format("%.2f", cartTotal)}",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -891,21 +928,35 @@ fun DashboardScreen(
                         }
 
                         Divider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = Color(0xFFF3F4F6)
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = Color(0xFFE5E7EB),
+                            thickness = 1.dp
                         )
 
-                        Row(
+                        Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            color = Color(0xFFF9FAFB),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, Color(0xFFF3F4F6))
                         ) {
-                            Text("TOTAL AMOUNT", fontWeight = FontWeight.Bold)
-                            Text(
-                                "₹${String.format("%.2f", cartTotal)}",
-                                fontWeight = FontWeight.Black,
-                                fontSize = 20.sp,
-                                color = theme.start
-                            )
+                            Row(
+                                modifier = Modifier.padding(20.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    viewModel.getString("grand_total", langCode),
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Gray,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    "₹${String.format("%.2f", cartTotal)}",
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 26.sp,
+                                    color = theme.start
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))
