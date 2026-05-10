@@ -44,7 +44,7 @@ fun ManageItemsScreen(
     onBack: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
-    var unit by remember { mutableStateOf("") }
+    var unit by remember { mutableStateOf("1") }
     var price by remember { mutableStateOf("") }
 
     // Edit state
@@ -72,9 +72,26 @@ fun ManageItemsScreen(
         colors = listOf(theme.start, theme.end)
     )
 
+    var wasOpenedViaDeepLink by remember { mutableStateOf(false) }
+    val itemToEdit by viewModel.itemToEdit.collectAsState()
+    LaunchedEffect(itemToEdit) {
+        itemToEdit?.let { item ->
+            searchQuery = item.name
+            editingItem = item
+            editName = item.name
+            editUnit = item.unit
+            editPrice = item.price.toString()
+            wasOpenedViaDeepLink = true
+            viewModel.setItemToEdit(null)
+        }
+    }
+
     // Edit Dialog
     editingItem?.let { item ->
-        Dialog(onDismissRequest = { editingItem = null }) {
+        Dialog(onDismissRequest = { 
+            editingItem = null 
+            wasOpenedViaDeepLink = false // Reset if canceled
+        }) {
             Card(
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -141,7 +158,10 @@ fun ManageItemsScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedButton(
-                            onClick = { editingItem = null },
+                            onClick = { 
+                                editingItem = null
+                                wasOpenedViaDeepLink = false
+                            },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(50)
                         ) {
@@ -157,6 +177,10 @@ fun ManageItemsScreen(
                                         editPrice.toDoubleOrNull() ?: item.price
                                     )
                                     editingItem = null
+                                    if (wasOpenedViaDeepLink) {
+                                        onBack()
+                                        wasOpenedViaDeepLink = false
+                                    }
                                 }
                             },
                             modifier = Modifier.weight(1f),
@@ -265,7 +289,7 @@ fun ManageItemsScreen(
                         onClick = {
                             if (name.isNotBlank() && price.isNotBlank()) {
                                 viewModel.addNewProduct(name, unit, price.toDoubleOrNull() ?: 0.0)
-                                name = ""; unit = ""; price = ""
+                                name = ""; unit = "1"; price = ""
                             }
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),

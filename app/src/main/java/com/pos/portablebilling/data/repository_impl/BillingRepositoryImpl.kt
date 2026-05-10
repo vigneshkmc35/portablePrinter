@@ -88,4 +88,8 @@ class BillingRepositoryImpl(
         )
         transactionDao.insertTransaction(entity)
     }
+
+    override suspend fun deleteTransaction(id: Long) {
+        transactionDao.deleteTransactionById(id)
+    }
 }

@@ -32,5 +32,12 @@
   "share": "பகிர்",
   "print": "பிரிண்ட்",
   "grand_total": "மொத்தம்",
-  "receipt": "ரசீது"
+  "receipt": "ரசீது",
+  "filter_all": "அனைத்தும்",
+  "filter_today": "இன்று",
+  "filter_yesterday": "நேற்று",
+  "filter_this_week": "இந்த வாரம்",
+  "filter_custom": "தேதியைத் தேர்ந்தெடு",
+  "modify_bill": "மாற்றியமை",
+  "delete_bill": "நீக்கு"
 }

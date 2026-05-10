@@ -22,4 +22,8 @@ class BillingUseCases(private val repository: BillingRepository) {
     suspend fun saveTransaction(transaction: Transaction) {
         repository.addTransaction(transaction)
     }
+
+    suspend fun deleteTransaction(id: Long) {
+        repository.deleteTransaction(id)
+    }
 }

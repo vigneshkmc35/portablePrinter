@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -85,6 +86,86 @@ class BillingViewModel(
 
     val transactions: StateFlow<List<Transaction>> = useCases.getTransactions()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    enum class HistoryFilter { ALL, TODAY, YESTERDAY, THIS_WEEK, CUSTOM }
+    private val _historyFilter = MutableStateFlow(HistoryFilter.ALL)
+    val historyFilter = _historyFilter.asStateFlow()
+
+    private val _customDate = MutableStateFlow<Long?>(null)
+    val customDate = _customDate.asStateFlow()
+
+    private val _modifyingTransactionId = MutableStateFlow<Long?>(null)
+    val modifyingTransactionId = _modifyingTransactionId.asStateFlow()
+
+    fun setHistoryFilter(filter: HistoryFilter, date: Long? = null) {
+        _historyFilter.value = filter
+        if (date != null) _customDate.value = date
+    }
+
+    val filteredTransactions: StateFlow<List<Transaction>> = combine(
+        transactions,
+        _historyFilter,
+        _customDate
+    ) { list, filter, customDate ->
+        val now = System.currentTimeMillis()
+        val calendar = java.util.Calendar.getInstance()
+        
+        when (filter) {
+            HistoryFilter.ALL -> list
+            HistoryFilter.TODAY -> {
+                calendar.timeInMillis = now
+                val todayYear = calendar.get(java.util.Calendar.YEAR)
+                val todayDay = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+                list.filter { 
+                    calendar.timeInMillis = it.timestamp
+                    calendar.get(java.util.Calendar.YEAR) == todayYear && 
+                    calendar.get(java.util.Calendar.DAY_OF_YEAR) == todayDay
+                }
+            }
+            HistoryFilter.YESTERDAY -> {
+                calendar.timeInMillis = now
+                calendar.add(java.util.Calendar.DAY_OF_YEAR, -1)
+                val yYear = calendar.get(java.util.Calendar.YEAR)
+                val yDay = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+                list.filter { 
+                    calendar.timeInMillis = it.timestamp
+                    calendar.get(java.util.Calendar.YEAR) == yYear && 
+                    calendar.get(java.util.Calendar.DAY_OF_YEAR) == yDay
+                }
+            }
+            HistoryFilter.THIS_WEEK -> {
+                calendar.timeInMillis = now
+                val week = calendar.get(java.util.Calendar.WEEK_OF_YEAR)
+                val year = calendar.get(java.util.Calendar.YEAR)
+                list.filter { 
+                    calendar.timeInMillis = it.timestamp
+                    calendar.get(java.util.Calendar.WEEK_OF_YEAR) == week && 
+                    calendar.get(java.util.Calendar.YEAR) == year
+                }
+            }
+            HistoryFilter.CUSTOM -> {
+                if (customDate == null) list
+                else {
+                    calendar.timeInMillis = customDate
+                    val cYear = calendar.get(java.util.Calendar.YEAR)
+                    val cDay = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+                    list.filter { 
+                        calendar.timeInMillis = it.timestamp
+                        calendar.get(java.util.Calendar.YEAR) == cYear && 
+                        calendar.get(java.util.Calendar.DAY_OF_YEAR) == cDay
+                    }
+                }
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    // Deep Link State for Edit
+    private val _itemToEdit = MutableStateFlow<ProductItem?>(null)
+    val itemToEdit = _itemToEdit.asStateFlow()
+
+    fun setItemToEdit(item: ProductItem?) {
+        _itemToEdit.value = item
+    }
 
     // Cart State
     private val _cartItems = MutableStateFlow<List<TransactionItem>>(emptyList())
@@ -184,6 +265,7 @@ class BillingViewModel(
 
     fun clearCart() {
         _cartItems.value = emptyList()
+        _modifyingTransactionId.value = null
     }
 
     fun connectPrinter(macAddress: String) {
@@ -206,8 +288,26 @@ class BillingViewModel(
         // Save to DB
         viewModelScope.launch {
             useCases.saveTransaction(transaction)
+            
+            // If this was a modification, delete the old transaction
+            _modifyingTransactionId.value?.let { oldId ->
+                useCases.deleteTransaction(oldId)
+                _modifyingTransactionId.value = null
+            }
+            
             clearCart()
         }
+    }
+
+    fun deleteTransaction(id: Long) {
+        viewModelScope.launch {
+            useCases.deleteTransaction(id)
+        }
+    }
+
+    fun loadTransactionToCart(transaction: Transaction) {
+        _cartItems.value = transaction.items
+        _modifyingTransactionId.value = transaction.id
     }
 
     fun printReceipt(transaction: Transaction) {
