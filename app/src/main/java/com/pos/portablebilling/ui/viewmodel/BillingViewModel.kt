@@ -83,6 +83,9 @@ class BillingViewModel(
     val catalogItems: StateFlow<List<ProductItem>> = useCases.getItems()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    val transactions: StateFlow<List<Transaction>> = useCases.getTransactions()
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     // Cart State
     private val _cartItems = MutableStateFlow<List<TransactionItem>>(emptyList())
     val cartItems = _cartItems.asStateFlow()
@@ -198,29 +201,32 @@ class BillingViewModel(
             totalAmount = cartTotal.value,
             items = _cartItems.value
         )
-
-        // Generate ESC/POS String
-        val receiptBuilder = java.lang.StringBuilder()
-        receiptBuilder.append("Item       Qty   Price\n")
-        receiptBuilder.append("--------------------------------\n")
-        
-        _cartItems.value.forEach { item ->
-            val name = item.productName.take(10).padEnd(10, ' ')
-            val qty = item.quantity.toString().padEnd(4, ' ')
-            val price = "Rs.${item.totalPrice}".padEnd(10, ' ')
-            receiptBuilder.append("$name $qty $price\n")
-        }
-        receiptBuilder.append("--------------------------------\n")
-        receiptBuilder.append("TOTAL: Rs.${cartTotal.value}\n")
-
-        // Print
-        printerManager.printReceipt(receiptBuilder.toString())
+        printReceipt(transaction)
 
         // Save to DB
         viewModelScope.launch {
             useCases.saveTransaction(transaction)
             clearCart()
         }
+    }
+
+    fun printReceipt(transaction: Transaction) {
+        // Generate ESC/POS String
+        val receiptBuilder = java.lang.StringBuilder()
+        receiptBuilder.append("Item       Qty   Price\n")
+        receiptBuilder.append("--------------------------------\n")
+        
+        transaction.items.forEach { item ->
+            val name = item.productName.take(10).padEnd(10, ' ')
+            val qty = item.quantity.toString().padEnd(4, ' ')
+            val price = "Rs.${item.totalPrice}".padEnd(10, ' ')
+            receiptBuilder.append("$name $qty $price\n")
+        }
+        receiptBuilder.append("--------------------------------\n")
+        receiptBuilder.append("TOTAL: Rs.${transaction.totalAmount}\n")
+
+        // Print
+        printerManager.printReceipt(receiptBuilder.toString())
     }
 
     override fun onCleared() {

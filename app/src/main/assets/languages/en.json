@@ -19,5 +19,18 @@
   "print_bill": "PRINT BILL",
   "no_products": "No products available",
   "selected_theme": "Selected Theme",
-  "app_theme": "APP THEME"
-  ,"per": "per", "cancel": "Cancel"   ,"product_name": "Product Name" }
+  "app_theme": "APP THEME",
+  "per": "per",
+  "cancel": "Cancel",
+  "product_name": "Product Name",
+  "transaction_history": "Transaction History",
+  "billing": "Billing",
+  "history": "History",
+  "no_transactions": "No transactions yet",
+  "bill_label": "Bill",
+  "close": "Close",
+  "share": "Share",
+  "print": "Print",
+  "grand_total": "GRAND TOTAL",
+  "receipt": "RECEIPT"
+}

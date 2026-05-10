@@ -19,5 +19,18 @@
   "print_bill": "பிரிண்ட் பில்",
   "no_products": "தயாரிப்புகள் இல்லை",
   "selected_theme": "தேர்ந்தெடுக்கப்பட்ட தீம்",
-  "app_theme": "ஆப் தீம்"
-  ,"per": "தலா", "cancel": "ரத்து"   ,"product_name": "தயாரிப்பு பெயர்" }
+  "app_theme": "ஆப் தீம்",
+  "per": "தலா",
+  "cancel": "ரத்து",
+  "product_name": "தயாரிப்பு பெயர்",
+  "transaction_history": "பரிவர்த்தனை வரலாறு",
+  "billing": "பில்லிங்",
+  "history": "வரலாறு",
+  "no_transactions": "பரிவர்த்தனைகள் ஏதுமில்லை",
+  "bill_label": "பில்",
+  "close": "மூடு",
+  "share": "பகிர்",
+  "print": "பிரிண்ட்",
+  "grand_total": "மொத்தம்",
+  "receipt": "ரசீது"
+}
